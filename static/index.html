@@ -9,9 +9,9 @@
         :root {
             --bg-color: #0b0b13;
             --text-color: #ffffff;
-            --accent-color: #667eea;
             --accent-gradient: linear-gradient(135deg, #667eea, #ff8a00);
             --planet-color: radial-gradient(circle at 30% 30%, #8a2be2, #4b0082, #000080);
+            --shadow-color: rgba(138, 43, 226, 0.6);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,15 +26,22 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: background 0.5s;
+            transition: background 0.8s ease;
         }
 
+        /* Звездный фон */
         .stars {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: moveStars 40s linear infinite;
             z-index: -1;
+        }
+
+        @keyframes moveStars {
+            from { background-position: 0 0; }
+            to { background-position: 0 800px; }
         }
 
         .container {
@@ -46,7 +53,7 @@
         }
 
         .galaxy-name {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             color: #a0a0b5;
             margin-bottom: 10px;
@@ -55,12 +62,19 @@
         }
 
         .score-display {
-            font-size: 48px;
+            font-size: 56px;
             font-weight: 800;
             background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 5px;
+            transition: all 0.3s;
+        }
+
+        .score-label {
+            font-size: 14px;
+            color: #a0a0b5;
+            margin-bottom: 20px;
         }
 
         .planet {
@@ -68,10 +82,11 @@
             height: 180px;
             border-radius: 50%;
             background: var(--planet-color);
-            box-shadow: 0 0 40px rgba(138, 43, 226, 0.6);
-            margin: 20px auto;
+            box-shadow: 0 0 50px var(--shadow-color);
+            margin: 0 auto 30px;
             cursor: pointer;
-            transition: transform 0.1s, background 0.5s;
+            transition: transform 0.1s, background 0.8s, box-shadow 0.8s;
+            position: relative;
         }
 
         .planet:active { transform: scale(0.9); }
@@ -81,13 +96,15 @@
             pointer-events: none;
             font-size: 24px;
             font-weight: bold;
-            color: #ff8a00;
+            color: #fff;
+            text-shadow: 0 0 10px var(--shadow-color);
             animation: floatUp 0.8s ease-out forwards;
+            z-index: 100;
         }
 
         @keyframes floatUp {
             0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-50px) scale(1.5); }
+            100% { opacity: 0; transform: translateY(-60px) scale(1.8); }
         }
 
         .upgrade-btn {
@@ -102,26 +119,33 @@
             cursor: pointer;
             margin-bottom: 10px;
             width: 100%;
+            transition: all 0.3s;
         }
 
-        .upgrade-btn:disabled { opacity: 0.5; }
-        .upgrade-title { font-weight: bold; }
-        .upgrade-cost { color: #ff8a00; }
+        .upgrade-btn:hover { background: rgba(255, 255, 255, 0.1); }
+        .upgrade-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .upgrade-title { font-weight: bold; text-align: left; }
+        .upgrade-cost { color: #ff8a00; font-weight: bold; }
 
         .next-galaxy-btn {
             margin-top: 20px;
             background: linear-gradient(135deg, #ff416c, #ff4b2b);
             border: none;
-            padding: 15px;
+            padding: 18px;
             border-radius: 12px;
             color: white;
             font-weight: bold;
+            font-size: 16px;
             width: 100%;
             cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4);
+            transition: transform 0.2s;
         }
 
+        .next-galaxy-btn:active { transform: scale(0.95); }
+
         .save-btn {
-            margin-top: 10px;
+            margin-top: 15px;
             background: var(--accent-gradient);
             border: none;
             padding: 15px;
@@ -130,7 +154,10 @@
             font-weight: bold;
             width: 100%;
             cursor: pointer;
+            transition: transform 0.2s;
         }
+
+        .save-btn:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -138,6 +165,8 @@
     <div class="container">
         <div class="galaxy-name" id="galaxy-name">Галактика 1: Туманность</div>
         <div class="score-display" id="score">0</div>
+        <div class="score-label">Звездная пыль</div>
+        
         <div class="planet" id="planet"></div>
         
         <button class="upgrade-btn" id="upgrade1">
@@ -145,7 +174,7 @@
                 <div class="upgrade-title">Ускоритель</div>
                 <div style="font-size:12px; color:#a0a0b5;">+1 пыль/сек</div>
             </div>
-            <div class="upgrade-cost">Стоимость: 10</div>
+            <div class="upgrade-cost" id="cost1">10</div>
         </button>
         
         <button class="upgrade-btn" id="upgrade2">
@@ -153,7 +182,7 @@
                 <div class="upgrade-title">Множитель</div>
                 <div style="font-size:12px; color:#a0a0b5;">+1 к клику</div>
             </div>
-            <div class="upgrade-cost">Стоимость: 50</div>
+            <div class="upgrade-cost" id="cost2">50</div>
         </button>
 
         <button class="next-galaxy-btn" id="next-galaxy" style="display:none;">🌌 Открыть новую галактику</button>
@@ -165,7 +194,7 @@
         tg.ready();
         tg.expand();
 
-        // Состояние игры
+        // Состояние
         let score = 0;
         let clickPower = 1;
         let passiveIncome = 0;
@@ -174,12 +203,18 @@
         let galaxy = 1;
         let multiplier = 1;
 
+        // 10 галактик с уникальными стилями
         const galaxies = [
-            { name: "Туманность", bg: "#0b0b13", color: "radial-gradient(circle at 30% 30%, #8a2be2, #4b0082, #000080)", gradient: "linear-gradient(135deg, #667eea, #ff8a00)" },
-            { name: "Красный гигант", bg: "#1a0505", color: "radial-gradient(circle at 30% 30%, #ff416c, #8b0000, #330000)", gradient: "linear-gradient(135deg, #ff416c, #ff8a00)" },
-            { name: "Изумрудный мир", bg: "#051a05", color: "radial-gradient(circle at 30% 30%, #00ff87, #008000, #003300)", gradient: "linear-gradient(135deg, #00ff87, #60efff)" },
-            { name: "Ледяной космос", bg: "#050d1a", color: "radial-gradient(circle at 30% 30%, #00c6ff, #0072ff, #001a33)", gradient: "linear-gradient(135deg, #00c6ff, #0072ff)" },
-            { name: "Золотая империя", bg: "#1a1505", color: "radial-gradient(circle at 30% 30%, #ffd700, #b8860b, #332200)", gradient: "linear-gradient(135deg, #ffd700, #ff8a00)" }
+            { name: "Туманность", bg: "#0b0b13", color: "radial-gradient(circle at 30% 30%, #8a2be2, #4b0082, #000080)", gradient: "linear-gradient(135deg, #667eea, #ff8a00)", shadow: "rgba(138,43,226,0.6)" },
+            { name: "Красный гигант", bg: "#1a0505", color: "radial-gradient(circle at 30% 30%, #ff416c, #8b0000, #330000)", gradient: "linear-gradient(135deg, #ff416c, #ff8a00)", shadow: "rgba(255,65,108,0.6)" },
+            { name: "Изумрудный мир", bg: "#051a05", color: "radial-gradient(circle at 30% 30%, #00ff87, #008000, #003300)", gradient: "linear-gradient(135deg, #00ff87, #60efff)", shadow: "rgba(0,255,135,0.6)" },
+            { name: "Ледяной космос", bg: "#050d1a", color: "radial-gradient(circle at 30% 30%, #00c6ff, #0072ff, #001a33)", gradient: "linear-gradient(135deg, #00c6ff, #0072ff)", shadow: "rgba(0,198,255,0.6)" },
+            { name: "Золотая империя", bg: "#1a1505", color: "radial-gradient(circle at 30% 30%, #ffd700, #b8860b, #332200)", gradient: "linear-gradient(135deg, #ffd700, #ff8a00)", shadow: "rgba(255,215,0,0.6)" },
+            { name: "Фиолетовая бездна", bg: "#10051a", color: "radial-gradient(circle at 30% 30%, #da22ff, #9733ee, #330066)", gradient: "linear-gradient(135deg, #da22ff, #9733ee)", shadow: "rgba(218,34,255,0.6)" },
+            { name: "Кровавая луна", bg: "#1a0000", color: "radial-gradient(circle at 30% 30%, #ff0000, #800000, #1a0000)", gradient: "linear-gradient(135deg, #ff0000, #ff8a00)", shadow: "rgba(255,0,0,0.6)" },
+            { name: "Неоновый рай", bg: "#051a1a", color: "radial-gradient(circle at 30% 30%, #00ffff, #008080, #001a1a)", gradient: "linear-gradient(135deg, #00ffff, #ff00ff)", shadow: "rgba(0,255,255,0.6)" },
+            { name: "Огненный шторм", bg: "#1a0a00", color: "radial-gradient(circle at 30% 30%, #ff8c00, #ff4500, #331100)", gradient: "linear-gradient(135deg, #ff8c00, #ff4500)", shadow: "rgba(255,140,0,0.6)" },
+            { name: "Черная дыра", bg: "#000000", color: "radial-gradient(circle at 30% 30%, #333333, #000000, #000000)", gradient: "linear-gradient(135deg, #555555, #000000)", shadow: "rgba(255,255,255,0.2)" }
         ];
 
         const scoreEl = document.getElementById('score');
@@ -192,13 +227,12 @@
 
         function updateUI() {
             scoreEl.innerText = Math.floor(score);
-            document.querySelector('#upgrade1 .upgrade-cost').innerText = `Стоимость: ${upgrade1Cost}`;
-            document.querySelector('#upgrade2 .upgrade-cost').innerText = `Стоимость: ${upgrade2Cost}`;
+            document.getElementById('cost1').innerText = `Стоимость: ${upgrade1Cost}`;
+            document.getElementById('cost2').innerText = `Стоимость: ${upgrade2Cost}`;
             btn1.disabled = score < upgrade1Cost;
             btn2.disabled = score < upgrade2Cost;
             
-            // Проверка на новую галактику (каждые 200 пыли)
-            if (score >= 200 && galaxy < galaxies.length) {
+            if (score >= 200 * galaxy && galaxy < galaxies.length) {
                 nextGalaxyBtn.style.display = 'block';
             } else {
                 nextGalaxyBtn.style.display = 'none';
@@ -247,18 +281,19 @@
         }, 1000);
 
         nextGalaxyBtn.addEventListener('click', () => {
-            if (score >= 200 && galaxy < galaxies.length) {
+            if (score >= 200 * galaxy && galaxy < galaxies.length) {
                 galaxy++;
-                multiplier += 1; // Увеличиваем множитель
+                multiplier += 1;
                 score = 0;
                 upgrade1Cost = 10;
                 upgrade2Cost = 50;
                 
-                // Меняем стили
                 const g = galaxies[galaxy - 1];
                 document.body.style.backgroundColor = g.bg;
                 planet.style.background = g.color;
+                planet.style.boxShadow = `0 0 50px ${g.shadow}`;
                 document.documentElement.style.setProperty('--accent-gradient', g.gradient);
+                document.documentElement.style.setProperty('--shadow-color', g.shadow);
                 galaxyNameEl.innerText = `Галактика ${galaxy}: ${g.name}`;
                 
                 updateUI();
